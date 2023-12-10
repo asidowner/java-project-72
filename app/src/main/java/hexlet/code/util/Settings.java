@@ -10,8 +10,8 @@ public class Settings {
 
     public Settings() {
         this.applicationPort = Integer.parseInt(
-                System.getProperty("PORT", "7070")
+                System.getenv().getOrDefault("PORT", "7070")
         );
-        this.debug = Boolean.parseBoolean(System.getProperty("DEBUG", "false"));
+        this.debug = Boolean.parseBoolean(System.getenv().getOrDefault("DEBUG", "false"));
     }
 }
