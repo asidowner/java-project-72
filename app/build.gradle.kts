@@ -28,12 +28,12 @@ dependencies {
     implementation("io.javalin:javalin-bundle:5.6.2")
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     implementation("org.slf4j:slf4j-simple:2.0.9")
-    // https://search.maven.org/artifact/com.zaxxer/HikariCP/5.1.0/jar?eh=
-    implementation("com.zaxxer:HikariCP:5.1.0")
+    // https://mvnrepository.com/artifact/org.postgresql/postgresql
+    implementation("org.postgresql:postgresql:42.7.0")
     // https://search.maven.org/artifact/com.h2database/h2/2.2.224/jar
     implementation("com.h2database:h2:2.2.224")
-    // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation("org.postgresql:postgresql:42.7.1")
+    // https://search.maven.org/artifact/com.zaxxer/HikariCP/5.1.0/jar?eh=
+    implementation("com.zaxxer:HikariCP:5.0.1")
     // test
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
