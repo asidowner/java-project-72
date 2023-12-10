@@ -32,6 +32,8 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.1.0")
     // https://search.maven.org/artifact/com.h2database/h2/2.2.224/jar
     implementation("com.h2database:h2:2.2.224")
+    // https://mvnrepository.com/artifact/org.postgresql/postgresql
+    implementation("org.postgresql:postgresql:42.7.1")
     // test
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
