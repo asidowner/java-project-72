@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.time.ZonedDateTime;
+import java.sql.Timestamp;
 
 @Getter
 @Setter
@@ -12,9 +12,9 @@ import java.time.ZonedDateTime;
 public class Url {
     private Long id;
     private String name;
-    private ZonedDateTime createAt;
+    private Timestamp createAt;
 
-    public Url(String name, ZonedDateTime createAt) {
+    public Url(String name, Timestamp createAt) {
         this.name = name;
         this.createAt = createAt;
     }

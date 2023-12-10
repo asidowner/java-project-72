@@ -9,11 +9,10 @@ import hexlet.code.util.Settings;
 import io.javalin.Javalin;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class App {
@@ -42,32 +41,21 @@ public class App {
     }
 
     private static void initDataBase() throws IOException, SQLException {
-        var sql = getSqlSchema();
+        var sql = readResourceFile("schema.sql");
 
         var hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(SETTINGS.getDatabaseUrl());
 
-        try (var dataSource = new HikariDataSource(hikariConfig);
-             var connection = dataSource.getConnection();
+        var dataSource = new HikariDataSource(hikariConfig);
+        try (var connection = dataSource.getConnection();
              var statement = connection.createStatement()) {
             statement.execute(sql);
-            BaseRepository.dataSource = dataSource;
         }
+        BaseRepository.dataSource = dataSource;
     }
 
-    private static String getSqlSchema() throws IOException {
-        var url = App.class.getClassLoader().getResource("schema.sql");
-        File file;
-        try {
-            file = new File(url.getFile());
-        } catch (NullPointerException e) {
-            log.info("Schema file not found;");
-            log.debug(e.toString());
-            throw e;
-        }
-
-        try (var lines = Files.lines(file.toPath())) {
-            return lines.collect(Collectors.joining("\n"));
-        }
+    private static String readResourceFile(String fileName) throws IOException {
+        var path = Paths.get("src", "main", "resources", fileName);
+        return Files.readString(path);
     }
 }
