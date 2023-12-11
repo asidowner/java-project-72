@@ -2,15 +2,21 @@ package hexlet.code;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import gg.jte.ContentType;
+import gg.jte.TemplateEngine;
+import gg.jte.resolve.ResourceCodeResolver;
 import hexlet.code.controller.RootController;
 import hexlet.code.repository.BaseRepository;
 import hexlet.code.util.NamedRoutes;
 import hexlet.code.util.Settings;
 import io.javalin.Javalin;
+import io.javalin.rendering.template.JavalinJte;
 import lombok.extern.slf4j.Slf4j;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 
@@ -27,11 +33,17 @@ public class App {
     public static Javalin getApp() throws IOException, SQLException {
         App.initDataBase();
 
+        JavalinJte.init(createTemplateEngine());
+
         Javalin app = Javalin.create(
                 javalinConfig -> {
                     if (SETTINGS.isDebug()) {
                         javalinConfig.plugins.enableDevLogging();
                     }
+                    javalinConfig.staticFiles.add(staticFileConfig -> {
+                        staticFileConfig.hostedPath = NamedRoutes.staticPath();
+                        staticFileConfig.directory = "static";
+                    });
                 }
         );
 
@@ -57,5 +69,11 @@ public class App {
     private static String readResourceFile(String fileName) throws IOException {
         var path = Paths.get("src", "main", "resources", fileName);
         return Files.readString(path);
+    }
+
+    private static TemplateEngine createTemplateEngine() {
+        ClassLoader classLoader = App.class.getClassLoader();
+        ResourceCodeResolver codeResolver = new ResourceCodeResolver("templates", classLoader);
+        return TemplateEngine.create(codeResolver, ContentType.Html);
     }
 }

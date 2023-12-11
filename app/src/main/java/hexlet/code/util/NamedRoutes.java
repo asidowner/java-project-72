@@ -5,4 +5,8 @@ public class NamedRoutes {
     public static String rootPath() {
         return "/";
     }
+
+    public static String staticPath() {
+        return "/static";
+    }
 }
