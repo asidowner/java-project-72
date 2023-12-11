@@ -42,5 +42,8 @@ bin/
 .DS_Store
 
 ### IDE ###
-/.idea/
-/jte-classes/
+.idea/
+app/.idea/
+
+### JTE ###
+app/jte-classes/

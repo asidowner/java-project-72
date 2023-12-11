@@ -11,6 +11,7 @@ import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppTest {
 
@@ -28,7 +29,7 @@ class AppTest {
             var response = client.get(NamedRoutes.rootPath());
             assertEquals(response.code(), 200);
             assertNotNull(response.body());
-            assertEquals(response.body().string(), "Hello World");
+            assertTrue(response.body().string().contains("Бесплатно проверяйте сайты на SEO пригодность"));
         }));
     }
 }
