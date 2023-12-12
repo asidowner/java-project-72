@@ -35,6 +35,7 @@ dependencies {
     // https://search.maven.org/artifact/com.zaxxer/HikariCP/5.1.0/jar?eh=
     implementation("com.zaxxer:HikariCP:5.1.0")
     // test
+    testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
