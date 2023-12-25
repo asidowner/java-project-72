@@ -8,7 +8,10 @@ import io.javalin.Javalin;
 import io.javalin.testtools.JavalinTest;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -112,10 +115,10 @@ class AppTest {
 
         var url = new Url(server.url("").toString(), Timestamp.from(ZonedDateTime.now().toInstant()));
         UrlRepository.save(url);
-        String stringMock = "<html lang=\"en\"><head>" +
-                "<meta name=\"Description\" content=\"I'm description\">" +
-                "<title>Анализатор страниц</title></head>" +
-                "<body><h1>I'm header</h1></body>";
+        String stringMock = "<html lang=\"en\"><head>"
+                + "<meta name=\"Description\" content=\"I'm description\">"
+                + "<title>Анализатор страниц</title></head>"
+                + "<body><h1>I'm header</h1></body>";
 
         JavalinTest.test(app, (server1, client) -> {
             server.enqueue(new MockResponse().setBody(stringMock).setResponseCode(200));
