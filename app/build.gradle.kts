@@ -34,10 +34,14 @@ dependencies {
     implementation("com.h2database:h2:2.2.224")
     // https://search.maven.org/artifact/com.zaxxer/HikariCP/5.1.0/jar?eh=
     implementation("com.zaxxer:HikariCP:5.1.0")
+    // https://mvnrepository.com/artifact/com.konghq/unirest-java
+    implementation("com.konghq:unirest-java:3.14.5")
     // test
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 }
 
 tasks.jacocoTestReport {

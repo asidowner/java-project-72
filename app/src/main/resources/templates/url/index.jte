@@ -1,3 +1,4 @@
+@import hexlet.code.util.DateTimeFormatter
 @import hexlet.code.util.NamedRoutes
 @import hexlet.code.dto.url.UrlsPage
 @param UrlsPage page
@@ -21,8 +22,16 @@ content = @`
                 <tr>
                     <td>${item.getId()}</td>
                     <td><a href="${NamedRoutes.urlPath(item.getId())}">${item.getName()}</a></td>
-                    <td></td>
-                    <td></td>
+                    @if(item.getLastCheckDate() != null)
+                        <td>${DateTimeFormatter.format(item.getLastCheckDate())}</td>
+                    @else
+                        <td></td>
+                    @endif
+                    @if(item.getStatus() != 0)
+                        <td>${item.getStatus()}</td>
+                    @else
+                        <td></td>
+                    @endif
                 </tr>
             @endfor
             </tbody>

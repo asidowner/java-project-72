@@ -10,8 +10,24 @@ import java.util.List;
 import java.util.Optional;
 
 public class UrlRepository extends BaseRepository {
-    private static final String FETCH_ALL_TEMPLATE = "SELECT id, name, created_at FROM url;";
-    private static final String FETCH_ONE_TEMPLATE = "SELECT id, name, created_at FROM url where id = ? LIMIT 1;";
+
+    private static final String FETCH_ALL_TEMPLATE = """
+            SELECT url.id as id,
+              url.name as name,
+              url.created_at as created_at,
+              (SELECT url_checks.created_at
+                 FROM url_checks
+               WHERE url_id = url.id
+               ORDER BY id
+               DESC LIMIT 1) as last_check_date,
+              (SELECT status_code
+                 FROM url_checks
+               WHERE url_id = url.id
+               ORDER BY id
+               DESC LIMIT 1) as last_check_status_code
+            FROM url;
+            """; // FixMe Better outer apply / join lateral, but H2 is H2.
+    private static final String FETCH_ONE_TEMPLATE = "SELECT id, name, created_at FROM url WHERE id = ? LIMIT 1;";
     private static final String CHECK_IF_EXISTS_TEMPLATE = "SELECT 1 FROM url WHERE name = ?;";
     private static final String SAVE_ONE_TEMPLATE = "INSERT INTO url (name, created_at) VALUES (?, ?);";
 
@@ -53,7 +69,7 @@ public class UrlRepository extends BaseRepository {
             Url url = null;
 
             if (resultSet.next()) {
-                url = getUrl(resultSet);
+                url = getUrlModelFromResultSet(resultSet);
             }
 
             return Optional.ofNullable(url);
@@ -69,7 +85,7 @@ public class UrlRepository extends BaseRepository {
             List<Url> result = new ArrayList<>();
 
             while (resultSet.next()) {
-                Url url = getUrl(resultSet);
+                Url url = getUrlModelForEntities(resultSet);
                 result.add(url);
             }
 
@@ -77,7 +93,24 @@ public class UrlRepository extends BaseRepository {
         }
     }
 
-    private static Url getUrl(ResultSet resultSet) throws SQLException {
+    private static Url getUrlModelForEntities(ResultSet resultSet) throws SQLException {
+        var url = getUrlModelFromResultSet(resultSet);
+
+        var lastCheckDate = resultSet.getTimestamp("last_check_date");
+
+        if (!resultSet.wasNull()) {
+            url.setLastCheckDate(lastCheckDate);
+        }
+
+        var status = resultSet.getInt("last_check_status_code");
+
+        if (!resultSet.wasNull()) {
+            url.setStatus(status);
+        }
+        return url;
+    }
+
+    private static Url getUrlModelFromResultSet(ResultSet resultSet) throws SQLException {
         var id = resultSet.getLong("id");
         var name = resultSet.getString("name");
         var createdAt = resultSet.getTimestamp("created_at");

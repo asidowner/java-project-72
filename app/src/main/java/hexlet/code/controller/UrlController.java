@@ -4,8 +4,10 @@ package hexlet.code.controller;
 import hexlet.code.dto.url.UrlPage;
 import hexlet.code.dto.url.UrlsPage;
 import hexlet.code.model.Url;
+import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
 import hexlet.code.util.FlashEnum;
+import hexlet.code.util.FlashWorker;
 import hexlet.code.util.NamedRoutes;
 import hexlet.code.util.UrlFormatter;
 import io.javalin.http.BadRequestResponse;
@@ -20,7 +22,6 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 public class UrlController {
@@ -30,17 +31,11 @@ public class UrlController {
 
 
     public static void index(Context ctx) throws SQLException {
-        var flash = (String) ctx.consumeSessionAttribute("flash");
-        var flashType = (String) ctx.consumeSessionAttribute("flashType");
-
         List<Url> urls = UrlRepository.getEntities();
 
         UrlsPage page = new UrlsPage(urls);
 
-        if (flash != null && flashType != null) {
-            page.setFlash(flash);
-            page.setFlashType(FlashEnum.valueOf(flashType));
-        }
+        FlashWorker.handler(ctx, page);
 
         ctx.render("url/index.jte", Collections.singletonMap("page", page));
     }
@@ -54,15 +49,13 @@ public class UrlController {
             formattedURL = UrlFormatter.formatURL(name);
         } catch (IllegalArgumentException | URISyntaxException e) {
             log.debug("Error on parse url", e);
-            ctx.sessionAttribute("flash", ERROR_FLASH_MESSAGE);
-            ctx.sessionAttribute("flashType", FlashEnum.danger.toString());
+            FlashWorker.create(ctx, ERROR_FLASH_MESSAGE, FlashEnum.danger);
             ctx.redirect(NamedRoutes.rootPath());
             return;
         }
 
         if (UrlRepository.exists(formattedURL)) {
-            ctx.sessionAttribute("flash", URL_EXISTS_FLASH_MESSAGE);
-            ctx.sessionAttribute("flashType", FlashEnum.info.toString());
+            FlashWorker.create(ctx, URL_EXISTS_FLASH_MESSAGE, FlashEnum.info);
             ctx.redirect(NamedRoutes.urlsPath());
             return;
         }
@@ -71,8 +64,7 @@ public class UrlController {
         var url = new Url(formattedURL, ts);
 
         UrlRepository.save(url);
-        ctx.sessionAttribute("flash", URL_SAVED_FLASH_MESSAGE);
-        ctx.sessionAttribute("flashType", FlashEnum.success.toString());
+        FlashWorker.create(ctx, URL_SAVED_FLASH_MESSAGE, FlashEnum.success);
         ctx.redirect(NamedRoutes.urlsPath());
     }
 
@@ -80,14 +72,14 @@ public class UrlController {
     public static void show(Context ctx) throws SQLException {
         var id = ctx.pathParamAsClass("id", Long.class).get();
 
-        Optional<Url> url = UrlRepository.find(id);
+        Url url = UrlRepository.find(id).orElseThrow(NotFoundResponse::new);
 
+        var urlChecks = UrlCheckRepository.filterByUrlId(url.getId());
 
-        if (url.isEmpty()) {
-            throw new NotFoundResponse();
-        }
+        UrlPage page = new UrlPage(url, urlChecks);
 
-        UrlPage page = new UrlPage(url.get());
+        FlashWorker.handler(ctx, page);
+
         ctx.render("url/show.jte", Collections.singletonMap("page", page));
     }
 

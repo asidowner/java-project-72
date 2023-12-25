@@ -13,6 +13,8 @@ public class Url {
     private Long id;
     private String name;
     private Timestamp createdAt;
+    private Timestamp lastCheckDate;
+    private int status;
 
     public Url(String name, Timestamp createdAt) {
         this.name = name;
