@@ -12,6 +12,7 @@ import io.javalin.http.NotFoundResponse;
 import kong.unirest.Unirest;
 import kong.unirest.UnirestException;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -30,9 +31,14 @@ public class UrlCheckController {
 
             var status = response.getStatus();
 
-            var h1 = "";
-            var title = "";
-            var description = "";
+            var parsedBody = Jsoup.parse(response.getBody());
+
+            var h1Element = parsedBody.selectFirst("h1");
+            var descriptionElement = parsedBody.selectFirst("meta[name=\"description\"]");
+
+            var h1 = h1Element != null ? h1Element.text() : "";
+            var title = parsedBody.title();
+            var description = descriptionElement != null ? descriptionElement.attr("content") : "";
             var ts = Timestamp.from(ZonedDateTime.now().toInstant());
 
             var urlCheck = new UrlCheck(status, title, h1, description, url.getId(), ts);

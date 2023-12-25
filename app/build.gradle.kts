@@ -6,7 +6,7 @@ plugins {
     id ("se.patrikerdes.use-latest-versions") version "0.2.18"
     id("com.github.ben-manes.versions") version "0.50.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("io.freefair.lombok") version "8.3"
+    id("io.freefair.lombok") version "8.4"
 }
 
 group = "hexlet.code"
@@ -24,8 +24,8 @@ dependencies {
     // javalin
     implementation("io.javalin:javalin:5.6.3")
     implementation("gg.jte:jte:3.1.6")
-    implementation("io.javalin:javalin-rendering:5.6.2")
-    implementation("io.javalin:javalin-bundle:5.6.2")
+    implementation("io.javalin:javalin-rendering:5.6.3")
+    implementation("io.javalin:javalin-bundle:5.6.3")
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
     implementation("org.slf4j:slf4j-simple:2.0.9")
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
@@ -35,13 +35,15 @@ dependencies {
     // https://search.maven.org/artifact/com.zaxxer/HikariCP/5.1.0/jar?eh=
     implementation("com.zaxxer:HikariCP:5.1.0")
     // https://mvnrepository.com/artifact/com.konghq/unirest-java
-    implementation("com.konghq:unirest-java:3.14.5")
+    implementation("com.konghq:unirest-java:4.0.0-RC2")
+    // https://mvnrepository.com/artifact/org.jsoup/jsoup
+    implementation("org.jsoup:jsoup:1.17.1")
     // test
     testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     // https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:5.0.0-alpha.12")
 }
 
 tasks.jacocoTestReport {

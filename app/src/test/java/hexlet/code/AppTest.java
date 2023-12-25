@@ -115,13 +115,28 @@ class AppTest {
 
         var url = new Url(server.url("").toString(), Timestamp.from(ZonedDateTime.now().toInstant()));
         UrlRepository.save(url);
-        String stringMock = "<html lang=\"en\"><head>"
-                + "<meta name=\"Description\" content=\"I'm description\">"
-                + "<title>Анализатор страниц</title></head>"
-                + "<body><h1>I'm header</h1></body>";
+
+        var title1 = "Анализатор страниц";
+        var header1 = "I'm header";
+        var header2 = "I'm second header";
+        var description1 = "I'm description";
+
+        String stringMock1 = "<html lang=\"en\"><head>"
+                + "<meta name=\"Description\" content=\"" + description1 + "\">"
+                + "<title>" + title1 + "</title></head>"
+                + "<body><h1>" + header1 + "</h1><h1>" + header2 + "</h1></body>";
+
+
+        var title2 = "Title 2";
+        var otherHeader = "Other header";
+
+        String stringMock2 = "<html lang=\"en\"><head><title>"
+                + title2 + "</title></head><body><h2>"
+                + otherHeader + "</h2></body>";
 
         JavalinTest.test(app, (server1, client) -> {
-            server.enqueue(new MockResponse().setBody(stringMock).setResponseCode(200));
+            server.enqueue(new MockResponse().setBody(stringMock1).setResponseCode(200));
+            server.enqueue(new MockResponse().setBody(stringMock2).setResponseCode(200));
             server.enqueue(new MockResponse().setResponseCode(404));
 
             var response1 = client.post(NamedRoutes.urlChecksPath(url.getId()));
@@ -130,11 +145,21 @@ class AppTest {
             var response2 = client.post(NamedRoutes.urlChecksPath(url.getId()));
             assertThat(response2.code()).isEqualTo(200);
 
+            var response3 = client.post(NamedRoutes.urlChecksPath(url.getId()));
+            assertThat(response3.code()).isEqualTo(200);
+
             var responseUrlDetail = client.get(NamedRoutes.urlPath(url.getId()));
             assertThat(responseUrlDetail.code()).isEqualTo(200);
             var responseBody = responseUrlDetail.body().string();
-            assertThat(responseBody).contains("200");
-            assertThat(responseBody).contains("404");
+            assertThat(responseBody)
+                    .contains("200")
+                    .contains("404")
+                    .contains(title1)
+                    .contains(header1)
+                    .doesNotContain(header2)
+                    .contains(description1)
+                    .contains(title2)
+                    .doesNotContain(otherHeader);
 
             var responseUrlList = client.get(NamedRoutes.urlsPath());
             assertThat(responseUrlList.code()).isEqualTo(200);
