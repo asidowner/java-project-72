@@ -16,10 +16,14 @@ import io.javalin.rendering.template.JavalinJte;
 import lombok.extern.slf4j.Slf4j;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class App {
@@ -72,8 +76,11 @@ public class App {
     }
 
     private static String readResourceFile(String fileName) throws IOException {
-        var path = Paths.get("src", "main", "resources", fileName);
-        return Files.readString(path);
+        var inputStream = App.class.getClassLoader().getResourceAsStream(fileName);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            return reader.lines().collect(Collectors.joining("\n"));
+        }
+
     }
 
     private static TemplateEngine createTemplateEngine() {
