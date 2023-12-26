@@ -7,7 +7,6 @@ import hexlet.code.model.Url;
 import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
 import hexlet.code.util.FlashEnum;
-import hexlet.code.util.FlashWorker;
 import hexlet.code.util.NamedRoutes;
 import hexlet.code.util.UrlFormatter;
 import io.javalin.http.BadRequestResponse;
@@ -35,7 +34,13 @@ public class UrlController {
 
         UrlsPage page = new UrlsPage(urls);
 
-        FlashWorker.handler(ctx, page);
+        var flash = (String) ctx.consumeSessionAttribute("flash");
+        var flashType = (String) ctx.consumeSessionAttribute("flashType");
+
+        if (flash != null && flashType != null) {
+            page.setFlash(flash);
+            page.setFlashType(FlashEnum.valueOf(flashType));
+        }
 
         ctx.render("url/index.jte", Collections.singletonMap("page", page));
     }
@@ -49,13 +54,15 @@ public class UrlController {
             formattedURL = UrlFormatter.formatURL(name);
         } catch (IllegalArgumentException | URISyntaxException e) {
             log.debug("Error on parse url", e);
-            FlashWorker.create(ctx, ERROR_FLASH_MESSAGE, FlashEnum.danger);
+            ctx.sessionAttribute("flash", ERROR_FLASH_MESSAGE);
+            ctx.sessionAttribute("flashType", FlashEnum.danger.toString());
             ctx.redirect(NamedRoutes.rootPath());
             return;
         }
 
         if (UrlRepository.exists(formattedURL)) {
-            FlashWorker.create(ctx, URL_EXISTS_FLASH_MESSAGE, FlashEnum.info);
+            ctx.sessionAttribute("flash", URL_EXISTS_FLASH_MESSAGE);
+            ctx.sessionAttribute("flashType", FlashEnum.info.toString());
             ctx.redirect(NamedRoutes.urlsPath());
             return;
         }
@@ -64,7 +71,8 @@ public class UrlController {
         var url = new Url(formattedURL, ts);
 
         UrlRepository.save(url);
-        FlashWorker.create(ctx, URL_SAVED_FLASH_MESSAGE, FlashEnum.success);
+        ctx.sessionAttribute("flash", URL_SAVED_FLASH_MESSAGE);
+        ctx.sessionAttribute("flashType", FlashEnum.success.toString());
         ctx.redirect(NamedRoutes.urlsPath());
     }
 
@@ -78,7 +86,13 @@ public class UrlController {
 
         UrlPage page = new UrlPage(url, urlChecks);
 
-        FlashWorker.handler(ctx, page);
+        var flash = (String) ctx.consumeSessionAttribute("flash");
+        var flashType = (String) ctx.consumeSessionAttribute("flashType");
+
+        if (flash != null && flashType != null) {
+            page.setFlash(flash);
+            page.setFlashType(FlashEnum.valueOf(flashType));
+        }
 
         ctx.render("url/show.jte", Collections.singletonMap("page", page));
     }

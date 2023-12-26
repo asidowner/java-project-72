@@ -14,6 +14,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
@@ -28,6 +31,17 @@ class AppTest {
     @BeforeAll
     public static void beforeAll() throws IOException {
         server = new MockWebServer();
+
+        MockResponse mockedResponse1 = new MockResponse()
+                .setBody(readFixture("urlCheck1.html")).setResponseCode(200);
+        MockResponse mockedResponse2 = new MockResponse()
+                .setBody(readFixture("urlCheck2.html")).setResponseCode(200);
+        MockResponse mockedResponse3 = new MockResponse().setResponseCode(404);
+
+        server.enqueue(mockedResponse1);
+        server.enqueue(mockedResponse2);
+        server.enqueue(mockedResponse3);
+
         server.start();
     }
 
@@ -39,6 +53,16 @@ class AppTest {
     @BeforeEach
     public void setUp() throws IOException, SQLException {
         app = App.getApp();
+    }
+
+    private static Path getFixturePath(String fileName) {
+        return Paths.get("src", "test", "resources", "fixtures", fileName)
+                .toAbsolutePath().normalize();
+    }
+
+    private static String readFixture(String fileName) throws IOException {
+        Path filePath = getFixturePath(fileName);
+        return Files.readString(filePath).trim();
     }
 
     @Test
@@ -116,29 +140,7 @@ class AppTest {
         var url = new Url(server.url("").toString(), Timestamp.from(ZonedDateTime.now().toInstant()));
         UrlRepository.save(url);
 
-        var title1 = "Анализатор страниц";
-        var header1 = "I'm header";
-        var header2 = "I'm second header";
-        var description1 = "I'm description";
-
-        String stringMock1 = "<html lang=\"en\"><head>"
-                + "<meta name=\"Description\" content=\"" + description1 + "\">"
-                + "<title>" + title1 + "</title></head>"
-                + "<body><h1>" + header1 + "</h1><h1>" + header2 + "</h1></body>";
-
-
-        var title2 = "Title 2";
-        var otherHeader = "Other header";
-
-        String stringMock2 = "<html lang=\"en\"><head><title>"
-                + title2 + "</title></head><body><h2>"
-                + otherHeader + "</h2></body>";
-
         JavalinTest.test(app, (server1, client) -> {
-            server.enqueue(new MockResponse().setBody(stringMock1).setResponseCode(200));
-            server.enqueue(new MockResponse().setBody(stringMock2).setResponseCode(200));
-            server.enqueue(new MockResponse().setResponseCode(404));
-
             var response1 = client.post(NamedRoutes.urlChecksPath(url.getId()));
             assertThat(response1.code()).isEqualTo(200);
 
@@ -150,6 +152,14 @@ class AppTest {
 
             var responseUrlDetail = client.get(NamedRoutes.urlPath(url.getId()));
             assertThat(responseUrlDetail.code()).isEqualTo(200);
+
+            var title1 = "Анализатор страниц";
+            var header1 = "I'm header";
+            var header2 = "I'm second header";
+            var description1 = "I'm description";
+            var title2 = "Title 2";
+            var otherHeader = "Other header";
+
             var responseBody = responseUrlDetail.body().string();
             assertThat(responseBody)
                     .contains("200")
@@ -164,8 +174,10 @@ class AppTest {
             var responseUrlList = client.get(NamedRoutes.urlsPath());
             assertThat(responseUrlList.code()).isEqualTo(200);
             var responseBodyList = responseUrlList.body().string();
-            assertThat(responseBodyList).contains("404");
-            assertThat(responseBodyList).doesNotContain("200");
+
+            assertThat(responseBodyList)
+                    .contains("404")
+                    .doesNotContain("200");
         });
 
     }

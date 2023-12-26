@@ -4,7 +4,6 @@ import hexlet.code.model.UrlCheck;
 import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
 import hexlet.code.util.FlashEnum;
-import hexlet.code.util.FlashWorker;
 import hexlet.code.util.NamedRoutes;
 import io.javalin.http.Context;
 import io.javalin.http.InternalServerErrorResponse;
@@ -20,6 +19,9 @@ import java.time.ZonedDateTime;
 
 @Slf4j
 public class UrlCheckController {
+    private static final String SUCCESSFUL_MESSAGE = "Страница успешно проверена";
+    private static final String ERROR_MESSAGE = "Некорректный адрес";
+
     public static void create(Context ctx) throws SQLException {
         var id = ctx.pathParamAsClass("id", Long.class)
                 .get();
@@ -50,10 +52,12 @@ public class UrlCheckController {
                 throw new InternalServerErrorResponse();
             }
 
-            FlashWorker.create(ctx, "Страница успешно проверена", FlashEnum.success);
+            ctx.sessionAttribute("flash", SUCCESSFUL_MESSAGE);
+            ctx.sessionAttribute("flashType", FlashEnum.success.toString());
         } catch (UnirestException e) {
             log.error("Request exception: ", e);
-            FlashWorker.create(ctx, "Некорректный адрес", FlashEnum.danger);
+            ctx.sessionAttribute("flash", ERROR_MESSAGE);
+            ctx.sessionAttribute("flashType", FlashEnum.danger.toString());
         }
 
         ctx.redirect(NamedRoutes.urlPath(url.getId()));
