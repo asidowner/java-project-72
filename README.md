@@ -10,3 +10,25 @@
 
 ### Site on render.com
 [page-analyzer](https://page-analyzer-q95n.onrender.com)
+
+### About
+
+This is a web application project to perform simplified SEO analysis of websites.
+
+### For start
+
+```shell
+./gradlew run
+```
+
+### test
+
+```shell
+./gradlew test
+```
+
+### Environment variables
+
+* PORT - port on which the application is running
+* JDBC_DATABASE_URL - DB connection string.
+* DEBUG - for debug mode.
