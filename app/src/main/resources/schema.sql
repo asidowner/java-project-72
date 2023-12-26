@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS url_checks;
-DROP TABLE IF EXISTS url;
+DROP TABLE IF EXISTS urls;
 
-CREATE TABLE url
+CREATE TABLE urls
 (
     id         SERIAL PRIMARY KEY,
     name       VARCHAR(255)             NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE url
 CREATE TABLE url_checks
 (
     id          SERIAL PRIMARY KEY,
-    url_id      SERIAL REFERENCES url (id) ON DELETE CASCADE,
+    url_id      SERIAL REFERENCES urls (id) ON DELETE CASCADE,
     status_code INT                      NOT NULL,
     h1          VARCHAR                  NOT NULL,
     title       VARCHAR                  NOT NULL,

@@ -12,24 +12,24 @@ import java.util.Optional;
 public class UrlRepository extends BaseRepository {
 
     private static final String FETCH_ALL_TEMPLATE = """
-            SELECT url.id as id,
-              url.name as name,
-              url.created_at as created_at,
+            SELECT urls.id as id,
+              urls.name as name,
+              urls.created_at as created_at,
               (SELECT url_checks.created_at
                  FROM url_checks
-               WHERE url_id = url.id
+               WHERE url_id = urls.id
                ORDER BY id
                DESC LIMIT 1) as last_check_date,
               (SELECT status_code
                  FROM url_checks
-               WHERE url_id = url.id
+               WHERE url_id = urls.id
                ORDER BY id
                DESC LIMIT 1) as last_check_status_code
-            FROM url;
+            FROM urls;
             """; // FixMe Better outer apply / join lateral, but H2 is H2.
-    private static final String FETCH_ONE_TEMPLATE = "SELECT id, name, created_at FROM url WHERE id = ? LIMIT 1;";
-    private static final String CHECK_IF_EXISTS_TEMPLATE = "SELECT 1 FROM url WHERE name = ?;";
-    private static final String SAVE_ONE_TEMPLATE = "INSERT INTO url (name, created_at) VALUES (?, ?);";
+    private static final String FETCH_ONE_TEMPLATE = "SELECT id, name, created_at FROM urls WHERE id = ? LIMIT 1;";
+    private static final String CHECK_IF_EXISTS_TEMPLATE = "SELECT 1 FROM urls WHERE name = ?;";
+    private static final String SAVE_ONE_TEMPLATE = "INSERT INTO urls (name, created_at) VALUES (?, ?);";
 
     public static void save(Url url) throws SQLException {
         try (var conn = dataSource.getConnection();

@@ -14,6 +14,6 @@ public class Settings {
                 System.getenv().getOrDefault("PORT", "7070")
         );
         this.debug = Boolean.parseBoolean(System.getenv().getOrDefault("DEBUG", "false"));
-        this.databaseUrl = System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:hexlet;DB_CLOSE_DELAY=-1;");
+        this.databaseUrl = System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:project;");
     }
 }
