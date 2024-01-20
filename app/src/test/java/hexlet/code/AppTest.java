@@ -1,6 +1,7 @@
 package hexlet.code;
 
 import hexlet.code.model.Url;
+import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
 import hexlet.code.util.DateTimeFormatter;
 import hexlet.code.util.NamedRoutes;
@@ -69,17 +70,19 @@ class AppTest {
             var response = client.post(NamedRoutes.urlsPath(), requestBody);
             assertThat(response.code()).isEqualTo(200);
             assertThat(response.body().string()).contains("https://example.com");
-
+            assertThat(UrlRepository.exists("https://example.com")).isTrue();
 
             requestBody = "url=http://example.com:8080";
             response = client.post(NamedRoutes.urlsPath(), requestBody);
             assertThat(response.code()).isEqualTo(200);
             assertThat(response.body().string()).contains("http://example.com:8080");
+            assertThat(UrlRepository.exists("http://example.com:8080")).isTrue();
 
             requestBody = "url=http://example.com:8089/abc";
             response = client.post(NamedRoutes.urlsPath(), requestBody);
             assertThat(response.code()).isEqualTo(200);
             assertThat(response.body().string()).contains("http://example.com:8089");
+            assertThat(UrlRepository.exists("http://example.com:8089")).isTrue();
         });
     }
 
@@ -92,6 +95,7 @@ class AppTest {
 
             response = client.get(NamedRoutes.urlsPath());
             assertThat(response.body().string()).doesNotContain("exampleBadUrl.com");
+            assertThat(UrlRepository.exists("exampleBadUrl.com")).isFalse();
 
 
             response = client.post(NamedRoutes.urlsPath());
@@ -149,6 +153,15 @@ class AppTest {
                     .contains(firstHeader)
                     .doesNotContain(secondHeader)
                     .contains(description);
+
+            var urlChecks = UrlCheckRepository.filterByUrlId(url.getId());
+            assertThat(urlChecks).isNotEmpty();
+            assertThat(urlChecks.size()).isEqualTo(1);
+
+            var urlCheck = urlChecks.get(0);
+            assertThat(urlCheck.getTitle()).isEqualTo(title);
+            assertThat(urlCheck.getH1()).isEqualTo(firstHeader);
+            assertThat(urlCheck.getDescription()).isEqualTo(description);
         });
     }
 
@@ -177,6 +190,12 @@ class AppTest {
                     .contains("200")
                     .contains(title)
                     .doesNotContain(otherHeader);
+
+            var urlChecks = UrlCheckRepository.filterByUrlId(url.getId());
+            assertThat(urlChecks).isNotEmpty();
+            assertThat(urlChecks.size()).isEqualTo(1);
+            var urlCheck = urlChecks.get(0);
+            assertThat(urlCheck.getTitle()).isEqualTo(title);
         });
     }
 
