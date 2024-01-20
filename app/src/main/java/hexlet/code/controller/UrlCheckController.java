@@ -14,8 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 
 @Slf4j
 public class UrlCheckController {
@@ -41,9 +39,8 @@ public class UrlCheckController {
             var h1 = h1Element != null ? h1Element.text() : "";
             var title = parsedBody.title();
             var description = descriptionElement != null ? descriptionElement.attr("content") : "";
-            var ts = Timestamp.from(ZonedDateTime.now().toInstant());
 
-            var urlCheck = new UrlCheck(status, title, h1, description, url.getId(), ts);
+            var urlCheck = new UrlCheck(status, title, h1, description, url.getId());
 
             try {
                 UrlCheckRepository.save(urlCheck);

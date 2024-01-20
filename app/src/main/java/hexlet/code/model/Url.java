@@ -16,8 +16,7 @@ public class Url {
     private Timestamp lastCheckDate;
     private int status;
 
-    public Url(String name, Timestamp createdAt) {
+    public Url(String name) {
         this.name = name;
-        this.createdAt = createdAt;
     }
 }

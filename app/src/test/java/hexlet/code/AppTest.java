@@ -18,8 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,17 +29,6 @@ class AppTest {
     @BeforeAll
     public static void beforeAll() throws IOException {
         server = new MockWebServer();
-
-        MockResponse mockedResponse1 = new MockResponse()
-                .setBody(readFixture("urlCheck1.html")).setResponseCode(200);
-        MockResponse mockedResponse2 = new MockResponse()
-                .setBody(readFixture("urlCheck2.html")).setResponseCode(200);
-        MockResponse mockedResponse3 = new MockResponse().setResponseCode(404);
-
-        server.enqueue(mockedResponse1);
-        server.enqueue(mockedResponse2);
-        server.enqueue(mockedResponse3);
-
         server.start();
     }
 
@@ -114,7 +101,7 @@ class AppTest {
 
     @Test
     public void testUrlPage() throws SQLException {
-        var url = new Url("https://example.com", Timestamp.from(ZonedDateTime.now().toInstant()));
+        var url = new Url("https://example.com");
         UrlRepository.save(url);
 
         JavalinTest.test(app, (server, client) -> {
@@ -135,41 +122,88 @@ class AppTest {
     }
 
     @Test
-    void testUrlCheck() throws SQLException {
-
-        var url = new Url(server.url("").toString(), Timestamp.from(ZonedDateTime.now().toInstant()));
+    void testUrlCheck() throws IOException, SQLException {
+        var url = new Url(server.url("").toString());
         UrlRepository.save(url);
 
+        MockResponse mockedResponse = new MockResponse()
+                .setBody(readFixture("urlCheck1.html")).setResponseCode(200);
+        server.enqueue(mockedResponse);
+
         JavalinTest.test(app, (server1, client) -> {
-            var response1 = client.post(NamedRoutes.urlChecksPath(url.getId()));
-            assertThat(response1.code()).isEqualTo(200);
-
-            var response2 = client.post(NamedRoutes.urlChecksPath(url.getId()));
-            assertThat(response2.code()).isEqualTo(200);
-
-            var response3 = client.post(NamedRoutes.urlChecksPath(url.getId()));
-            assertThat(response3.code()).isEqualTo(200);
+            var response = client.post(NamedRoutes.urlChecksPath(url.getId()));
+            assertThat(response.code()).isEqualTo(200);
 
             var responseUrlDetail = client.get(NamedRoutes.urlPath(url.getId()));
             assertThat(responseUrlDetail.code()).isEqualTo(200);
 
-            var title1 = "Анализатор страниц";
-            var header1 = "I'm header";
-            var header2 = "I'm second header";
-            var description1 = "I'm description";
-            var title2 = "Title 2";
+            var title = "Анализатор страниц";
+            var firstHeader = "I'm header";
+            var secondHeader = "I'm second header";
+            var description = "I'm description";
+
+            var responseBody = responseUrlDetail.body().string();
+            assertThat(responseBody)
+                    .contains("200")
+                    .contains(title)
+                    .contains(firstHeader)
+                    .doesNotContain(secondHeader)
+                    .contains(description);
+        });
+    }
+
+    @Test
+    void testUrlCheckWithoutDescriptionAndHeader() throws IOException, SQLException {
+        var url = new Url(server.url("").toString());
+        UrlRepository.save(url);
+
+        MockResponse mockedResponse = new MockResponse()
+                .setBody(readFixture("urlCheck2.html")).setResponseCode(200);
+        server.enqueue(mockedResponse);
+
+        JavalinTest.test(app, (server1, client) -> {
+            var response = client.post(NamedRoutes.urlChecksPath(url.getId()));
+            assertThat(response.code()).isEqualTo(200);
+
+            var responseUrlDetail = client.get(NamedRoutes.urlPath(url.getId()));
+            assertThat(responseUrlDetail.code()).isEqualTo(200);
+
+
+            var title = "Title 2";
             var otherHeader = "Other header";
 
             var responseBody = responseUrlDetail.body().string();
             assertThat(responseBody)
                     .contains("200")
-                    .contains("404")
-                    .contains(title1)
-                    .contains(header1)
-                    .doesNotContain(header2)
-                    .contains(description1)
-                    .contains(title2)
+                    .contains(title)
                     .doesNotContain(otherHeader);
+        });
+    }
+
+    @Test
+    void testUrlCheckLastCheck() throws SQLException {
+        var url = new Url(server.url("").toString());
+        UrlRepository.save(url);
+
+        MockResponse mockedResponse1 = new MockResponse().setResponseCode(200);
+        MockResponse mockedResponse2 = new MockResponse().setResponseCode(404);
+
+        server.enqueue(mockedResponse1);
+        server.enqueue(mockedResponse2);
+
+        JavalinTest.test(app, (server1, client) -> {
+            var response1 = client.post(NamedRoutes.urlChecksPath(url.getId()));
+            assertThat(response1.code()).isEqualTo(200);
+            var response2 = client.post(NamedRoutes.urlChecksPath(url.getId()));
+            assertThat(response2.code()).isEqualTo(200);
+
+            var responseUrlDetail = client.get(NamedRoutes.urlPath(url.getId()));
+            assertThat(responseUrlDetail.code()).isEqualTo(200);
+
+            var responseBody = responseUrlDetail.body().string();
+            assertThat(responseBody)
+                    .contains("200")
+                    .contains("404");
 
             var responseUrlList = client.get(NamedRoutes.urlsPath());
             assertThat(responseUrlList.code()).isEqualTo(200);
@@ -179,6 +213,5 @@ class AppTest {
                     .contains("404")
                     .doesNotContain("200");
         });
-
     }
 }

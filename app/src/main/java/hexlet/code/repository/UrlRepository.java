@@ -5,6 +5,8 @@ import hexlet.code.model.Url;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -35,12 +37,14 @@ public class UrlRepository extends BaseRepository {
         try (var conn = dataSource.getConnection();
              var prepareStatement = conn.prepareStatement(SAVE_ONE_TEMPLATE, Statement.RETURN_GENERATED_KEYS)) {
             prepareStatement.setString(1, url.getName());
-            prepareStatement.setTimestamp(2, url.getCreatedAt());
+            var ts = Timestamp.from(ZonedDateTime.now().toInstant());
+            prepareStatement.setTimestamp(2, ts);
             prepareStatement.executeUpdate();
 
             ResultSet generatedKeys = prepareStatement.getGeneratedKeys();
             if (generatedKeys.next()) {
                 url.setId(generatedKeys.getLong(1));
+                url.setCreatedAt(ts);
             } else {
                 throw new SQLException("DB have not returned an id after saving an entity");
             }
@@ -115,7 +119,8 @@ public class UrlRepository extends BaseRepository {
         var name = resultSet.getString("name");
         var createdAt = resultSet.getTimestamp("created_at");
 
-        Url url = new Url(name, createdAt);
+        Url url = new Url(name);
+        url.setCreatedAt(createdAt);
         url.setId(id);
         return url;
     }
